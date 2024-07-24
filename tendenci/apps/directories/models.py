@@ -34,7 +34,7 @@ from tendenci.apps.entities.models import Entity
 from tendenci.libs.abstracts.models import OrderingBaseModel
 from tendenci.apps.base.utils import validate_email
 from tendenci.apps.base.validators import UnicodeNameValidator
-from django.conf import settings
+
 
 def file_directory(instance, filename):
     filename = correct_filename(filename)
@@ -60,7 +60,7 @@ class Directory(TendenciBaseModel):
     slug = SlugField(_('URL Path'), unique=True)
     entity = models.OneToOneField(Entity, blank=True, null=True,
                                   on_delete=models.SET_NULL,)
-    timezone = TimeZoneField(verbose_name=_('Time Zone'), default=settings.TIME_ZONE, choices=get_timezone_choices(), max_length=100)
+    timezone = TimeZoneField(verbose_name=_('Time Zone'), default='US/Central', choices=get_timezone_choices(), max_length=100)
     headline = models.CharField(_('Name'), max_length=200, blank=True)
     summary = models.TextField(blank=True)
     body = tinymce_models.HTMLField(_('Description'))

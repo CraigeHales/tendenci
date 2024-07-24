@@ -1629,7 +1629,7 @@ def add(request, year=None, month=None, day=None, is_template=False, parent_even
     )
     form_sponsor = SponsorForm(request.POST or None, prefix='sponsor')
 
-    if has_perm(request.user,'events.add_event'): # events/events/can add event in profiles/edit_perms/43/ or profiles/ma14/ ->permissions
+    if has_perm(request.user,'events.add_event'):
         if request.method == "POST":
 
             # single forms
