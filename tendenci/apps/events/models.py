@@ -2632,7 +2632,7 @@ class Event(TendenciBaseModel):
     all_day = models.BooleanField(default=False)
     start_dt = models.DateTimeField()
     end_dt = models.DateTimeField()
-    timezone = TimeZoneField(verbose_name=_('Time Zone'), default='US/Central', choices=get_timezone_choices(), max_length=100)
+    timezone = TimeZoneField(verbose_name=_('Time Zone'), default=settings.TIME_ZONE, choices=get_timezone_choices(), max_length=100)
     place = models.ForeignKey('Place', null=True, on_delete=models.SET_NULL)
     registration_configuration = models.OneToOneField('RegistrationConfiguration', null=True, editable=False, on_delete=models.CASCADE)
     mark_registration_ended = models.BooleanField(_('Registration Ended'), default=False)
