@@ -12,7 +12,7 @@ from django.urls import reverse
 from django.db.models.fields import AutoField
 from django.template.loader import render_to_string
 from django.utils.encoding import smart_str
-from django.utils.translation import gettext
+from django.utils.translation import gettext_lazy as _
 
 from tendenci.apps.directories.models import Directory, DirectoryPricing
 from tendenci.apps.invoices.models import Invoice
@@ -55,16 +55,16 @@ def get_duration_choices(user):
             else:
                 prices = "%s%s(R)/%s(P)" % (currency_symbol, pricing.regular_price,
                                     pricing.premium_price)
-            choice = (pricing.pk, '%d days for %s' % (pricing.duration, prices))
+            choice = (pricing.pk, _(f'{pricing.duration_display()} for {prices}'))
         choices.append(choice)
 
     return choices
 
 def get_payment_method_choices(user):
     if user.profile.is_superuser:
-        return (('paid - check', gettext('User paid by check')),
-                ('paid - cc', gettext('User paid by credit card')),
-                ('Credit Card', gettext('Make online payment NOW')),)
+        return (('paid - check', _('User paid by check')),
+                ('paid - cc', _('User paid by credit card')),
+                ('Credit Card', _('Make online payment NOW')),)
     else:
         directory_payment_types = get_setting('module', 'directories', 'directoriespaymenttypes')
         if directory_payment_types:
@@ -92,8 +92,10 @@ def directory_set_inv_payment(user, directory, pricing):
             inv.message = 'Thank You.'
             inv.status = True
 
-            inv.total = get_directory_price(user, directory, pricing)
-            inv.subtotal = inv.total
+            amount = get_directory_price(user, directory, pricing)
+            inv.assign_tax([(amount, 0)], user)
+            inv.subtotal = amount
+            inv.total = amount + inv.tax + inv.tax_2
             inv.balance = inv.total
             inv.estimate = True
             inv.status_detail = 'estimate'
