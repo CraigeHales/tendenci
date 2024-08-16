@@ -8,6 +8,9 @@ from tendenci.apps.registry.exceptions import AlreadyRegistered, NotRegistered
 from tendenci.apps.registry.cache import cache_reg_apps, get_reg_apps, delete_reg_apps_cache
 from tendenci.apps.site_settings.utils import check_setting, get_setting
 
+from time import perf_counter
+from addons.forestHome.cacher import cache_by_,reportElapsed,green,red,blue,yellow
+
 lazy_reverse = lazy(reverse, str)
 
 
@@ -169,12 +172,19 @@ class RegistrySite(object):
         cache_reg_apps(self.get_registered_apps())
 
     def get_registered_apps(self):
+        t1_start = perf_counter()
         cached_apps = get_reg_apps()
+        t1_stop = perf_counter()
+        reportElapsed(t1_stop-t1_start,f"get_registered_apps 1",__file__)  
+        t1_start = perf_counter()
         if cached_apps:
             #build RegisteredApps object from the cache
             apps = RegisteredApps(cached_apps, build_from_cache=True)
         else:
             apps = RegisteredApps(self._registry)
+        t1_stop = perf_counter()
+        reportElapsed(t1_stop-t1_start,f"get_registered_apps 2 {cached_apps is None}",__file__)  
+
         return apps
 
 site = RegistrySite()

@@ -150,6 +150,8 @@ class OembedlyCache(models.Model):
 
     @staticmethod
     def get_thumbnail(url, width, height):
+        print(f"not using embedly tendenci/apps/videos/models.py")
+        return False # the key does not work, take a shortcut
         try:
             return OembedlyCache.objects.filter(url=url, width=width, height=height)[0].thumbnail
         except IndexError:

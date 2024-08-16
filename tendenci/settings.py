@@ -832,15 +832,15 @@ Q_CLUSTER = {
 # ---------------------------------------------------------------------------- #
 # Debugging Tools
 # ---------------------------------------------------------------------------- #
-
-DEBUG_TOOLBAR_ENABLED = False
-try:
-    import debug_toolbar  # noqa: F401
-    MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware']
-    INSTALLED_APPS += ['debug_toolbar']
-    DEBUG_TOOLBAR_CONFIG = {
-        'SHOW_TOOLBAR_CALLBACK': lambda req: DEBUG_TOOLBAR_ENABLED,
-        'SHOW_COLLAPSED': False,
-    }
-except ImportError:
-    pass
+# wch commented out debug tool bar below...
+# DEBUG_TOOLBAR_ENABLED = False
+# try:
+#     import debug_toolbar  # noqa: F401
+#     MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware']
+#     INSTALLED_APPS += ['debug_toolbar']
+#     DEBUG_TOOLBAR_CONFIG = {
+#         'SHOW_TOOLBAR_CALLBACK': lambda req: DEBUG_TOOLBAR_ENABLED,
+#         'SHOW_COLLAPSED': False,
+#     }
+# except ImportError:
+#     pass

@@ -77,7 +77,7 @@ class Person(TendenciBaseModel):
 
     url = models.CharField(_('url'), max_length=100, blank=True)
 
-    time_zone = TimeZoneField(verbose_name=_('Time Zone'), default='US/Central', choices=get_timezone_choices(), max_length=100)
+    time_zone = TimeZoneField(verbose_name=_('Time Zone'), default=settings.TIME_ZONE, choices=get_timezone_choices(), max_length=100)
     language = models.CharField(_('language'), max_length=10, choices=settings.LANGUAGES, default=settings.LANGUAGE_CODE)
 
     perms = GenericRelation(ObjectPermission,
@@ -762,8 +762,8 @@ class Profile(Person):
                                 static(settings.GAVATAR_DEFAULT_URL))
 
         if get_setting('module', 'users', 'disablegravatar'):
-            return default or static(settings.GAVATAR_DEFAULT_URL)
-
+            return static(settings.GAVATAR_DEFAULT_URL)
+        print(" \033[31m >>>>>>>>>> GRAVATAR <<<<<<<<< \033[0m tendenci/apps/profiles/models.py#766")
         gravatar_url = "//www.gravatar.com/avatar/" + self.getMD5() + "?"
         gravatar_url += urlencode({'d':default, 's':str(size)})
         return gravatar_url

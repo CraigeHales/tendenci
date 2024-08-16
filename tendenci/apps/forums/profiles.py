@@ -73,8 +73,9 @@ class PybbProfile(models.Model):
         return m.hexdigest()
 
     def get_gravatar_url(self):
-        size = defaults.PYBB_AVATAR_WIDTH
-        default = get_setting('site', 'global', 'siteurl') +  defaults.PYBB_DEFAULT_AVATAR_URL
-        gravatar_url = "//www.gravatar.com/avatar/" + self.getMD5() + "?"
-        gravatar_url += urlencode({'d':default, 's':str(size)})
+#        size = defaults.PYBB_AVATAR_WIDTH
+#        default = get_setting('site', 'global', 'siteurl') +  defaults.PYBB_DEFAULT_AVATAR_URL
+#        gravatar_url = "//www.gravatar.com/avatar/" + self.getMD5() + "?"
+#        gravatar_url += urlencode({'d':default, 's':str(size)})
+        gravatar_url = self.user.profile.get_gravatar_url(size=defaults.PYBB_AVATAR_WIDTH)
         return gravatar_url

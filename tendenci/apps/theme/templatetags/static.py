@@ -13,6 +13,9 @@ from tendenci.apps.theme.utils import (get_active_theme, get_theme,
                                        get_theme_search_order, is_builtin_theme,
                                        get_builtin_theme_dir, get_theme_root)
 
+from time import perf_counter
+from addons.forestHome.cacher import cache_by_,reportElapsed,green,red,blue,yellow
+
 
 register = template.Library()
 
@@ -29,13 +32,27 @@ def get_static_prefix(parser, token):
 _cached_theme_search_info = (None, None)
 class ThemeStaticNode(StaticNode):
 
+    cache = {}
+
     def url(self, context):
         path = self.path.resolve(context)
         return self.handle_simple(path, self.local_only, self.template, self.theme)
 
     @classmethod
     def handle_simple(cls, path, local_only, template=None, theme=None):
+        if path not in cls.cache:
+            t1_start = perf_counter()
+            cls.cache[path] = cls.handle_simple2( path, local_only, template, theme)
+            t1_stop = perf_counter()
+            reportElapsed(t1_stop-t1_start,f"{red('cache')} {path}:{cls.cache[path]}",__file__)
+        else:
+            reportElapsed(0,f"{green('reuse')} {path}:{cls.cache[path]}",__file__)
+        if path=='tiny_mce/tinymce.min.js':
+            print('slow /home/c/srvgh/tendenci-git/tendenci/apps/theme/templatetags/static.py')
+        return cls.cache[path]
 
+    @classmethod
+    def handle_simple2(cls, path, local_only, template, theme):
         active_theme = get_active_theme()
         theme = get_theme(active_theme)
         global _cached_theme_search_info

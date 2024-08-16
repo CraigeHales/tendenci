@@ -234,7 +234,8 @@ def photo_size(request, id, size, crop=False, quality=90, download=False, constr
     if cached_image:
         if settings.USE_S3_STORAGE:
             return redirect(default_storage.url(cached_image))
-        return redirect('{0}{1}'.format(get_setting('site', 'global', 'siteurl'), cached_image))
+        #return redirect('{0}{1}'.format(get_setting('site', 'global', 'siteurl'), cached_image))
+        return redirect( cached_image)
 
     photo = get_object_or_404(Image, id=id)
     size = [int(s) for s in size.split('x')]
@@ -259,7 +260,8 @@ def photo_size(request, id, size, crop=False, quality=90, download=False, constr
     # Check if this particular thumbnail already exists on file system.
     # If it's there, no need to rebuild it from the original image!
     file_name = photo.image_filename()
-    file_path = 'cached%s%s' % (request.path, file_name)
+    #file_path = 'cached%s%s' % (request.path, file_name)
+    file_path = 'cached/%s%s/%s_%sx%s_%s' % ("photos", int(id)%100, id, size[0], size[1], file_name) 
     if default_storage.exists(file_path):
         image = PILImage.open(default_storage.open(file_path))
     else:
@@ -277,7 +279,7 @@ def photo_size(request, id, size, crop=False, quality=90, download=False, constr
 
     if photo.is_public_photo() and photo.is_public_photoset():
         if not default_storage.exists(file_path):
-            default_storage.save(file_path, ContentFile(response.content))
+            default_storage.save(file_path, ContentFile(response.content)) # 'cached/photos/366/640x640/constrain/90/chipmunk-and-tardigrade-fighting-on-a-mountaintop-with-a-lightning-bol-5b692.jpeg'
         if settings.USE_S3_STORAGE:
             cache.set(cache_key, file_path)
         else:

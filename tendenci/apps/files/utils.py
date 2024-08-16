@@ -35,7 +35,7 @@ def get_image(file, size, pre_key, crop=False, quality=90, cache=False, unique_k
     size = validate_image_size(size)  # make sure it's not too big
     binary = None
 
-    if cache:
+    if cache: # wch: tends to be False, not sure why the JPEG data would be in the memory cache, "details()" keeps it on disk
         key = generate_image_cache_key(file, size, pre_key, crop, unique_key, quality, constrain)
         binary = django_cache.get(key)  # check if key exists
 
@@ -47,10 +47,10 @@ def get_image(file, size, pre_key, crop=False, quality=90, cache=False, unique_k
             'unique_key': unique_key,
             'constrain': constrain,
         }
-        binary = build_image(file, size, pre_key, **kwargs)
+        binary = build_image(file, size, pre_key, **kwargs) # wch: binary means JPEG compressed blob
 
     try:
-        return Image.open(BytesIO(binary))
+        return Image.open(BytesIO(binary)) # wch: decode the JPEG into a PIL image
     except:
         return ''
 
@@ -100,13 +100,13 @@ def build_image(file, size, pre_key, crop=False, quality=90, cache=False, unique
             image = image.convert("RGB")
 
     if crop:
-        image = image_rescale(image, size)  # thumbnail image
+        image = image_rescale(image, size)  # thumbnail image - wch: image_rescale crops the least it can to get the size requested
     else:
         format = image.format
         image = image.resize(size, Image.LANCZOS)  # resize image
         image.format = format
 
-    binary = get_image_binary(image, **image_options)
+    binary = get_image_binary(image, **image_options) # wch returns jpeg encoded data from PIL image
 
     if cache:
         key = generate_image_cache_key(file, size, pre_key, crop, unique_key, quality, constrain)

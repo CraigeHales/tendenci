@@ -139,6 +139,7 @@ def nav(context, nav_id, show_title=False, is_site_map=False):
         nav_object = navs[0]
         nav = get_nav(nav_object.pk, is_site_map=is_site_map)
         if not nav:
+            print(f"user {user} caching nav{nav_object.pk} {nav_object} tendenci/apps/navs/templatetags/nav_tags.py#142")
             nav = cache_nav(nav_object, show_title, is_site_map=is_site_map)
     except:
         return None
@@ -273,7 +274,7 @@ class GetNavNode(Node):
             if user.is_authenticated:
                 if not user.profile.is_superuser:
                     nav = nav.distinct()
-
+            print(f"user {user} rendering nav {nav[0]} tendenci/apps/navs/templatetags/nav_tags.py#277")
             context[self.context_var] = nav[0]
         except:
             pass

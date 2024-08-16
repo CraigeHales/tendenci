@@ -14,6 +14,8 @@ from django.utils.encoding import smart_bytes
 
 from tendenci.apps.robots.models import Robot
 
+from time import perf_counter
+from addons.forestHome.cacher import cache_by_,reportElapsed,green,red,blue,yellow
 
 default_keyword_args = (
     'request',
@@ -78,6 +80,7 @@ class EventLogManager(Manager):
         return event_logs.order_by('-create_dt')
 
     def log(self, **kwargs):
+        t1_start = perf_counter()
         """
         Simple Example:
             from tendenci.apps.event_logs.models import EventLog
@@ -257,6 +260,12 @@ class EventLogManager(Manager):
         # and the groups are separated by colons :
         if "." in event_log.user_ip_address or ":" in event_log.user_ip_address:
             event_log.save()
+            t1_stop = perf_counter()
+            reportElapsed(t1_stop-t1_start,f"{repr(event_log)}",__file__)
+            # elapsed = t1_stop-t1_start
+            # color="32" if elapsed<.001 else "34" if elapsed<.002 else "33" if elapsed < .005 else "31" # https://stackoverflow.com/questions/58030468/how-to-have-colors-in-terminal-with-python-in-vscode
+            # #     green                     blue                       yellow                     red
+            # print(f"\033[{color}m{elapsed:.4f}\033[0m seconds  tendenci/apps/event_logs/managers.py")
             return event_log
         else:
             return None

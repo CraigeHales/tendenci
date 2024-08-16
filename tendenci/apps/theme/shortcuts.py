@@ -1,6 +1,7 @@
 from django.http import HttpResponse
 from django.template.loader import get_template, select_template
-
+from time import perf_counter
+from addons.forestHome.cacher import cache_by_,reportElapsed,green,red,blue,yellow
 
 def _strip_content_above_doctype(html):
     """Strips any content above the doctype declaration out of the
@@ -32,6 +33,8 @@ def themed_response(request, template_name, context={}, content_type=None, statu
     from tendenci.apps.theme.shortcuts import themed_response as render_to_resp
     """
 
+    print("tendenci/apps/theme/shortcuts.py is rendering ",template_name) # wch
+
     if isinstance(template_name, (list, tuple)):
         template = select_template(template_name, using=using)
     else:
@@ -39,8 +42,14 @@ def themed_response(request, template_name, context={}, content_type=None, statu
 
     context['TEMPLATE_NAME'] = template.origin.template_name
     context['TEMPLATE_THEME'] = getattr(template.origin, 'theme', None)
-
+    t1_start = perf_counter()
     rendered = template.render(context=context, request=request)
+    t1_stop = perf_counter()
+    reportElapsed(t1_stop-t1_start,f"template render {template_name}",__file__)
+    # elapsed = t1_stop-t1_start
+    # color="32" if elapsed<.001 else "34" if elapsed<.002 else "33" if elapsed < .005 else "31" # https://stackoverflow.com/questions/58030468/how-to-have-colors-in-terminal-with-python-in-vscode
+    # #     green                     blue                       yellow                     red
+    # print(f"\033[{color}m{elapsed:.4f}\033[0m seconds  tendenci/apps/theme/shortcuts.py")
     rendered = _strip_content_above_doctype(rendered)
 
     return HttpResponse(rendered, content_type=content_type, status=status)

@@ -8,6 +8,9 @@ from tendenci.apps.perms.utils import get_query_filters
 from tendenci.apps.base.template_tags import ListNode, parse_tag_kwargs
 from tendenci.apps.boxes.models import Box
 
+from time import perf_counter
+from addons.forestHome.cacher import cache_by_,reportElapsed,green,red,blue,yellow
+
 register = Library()
 
 
@@ -16,6 +19,7 @@ class GetBoxNode(Node):
         self.pk = pk
 
     def render(self, context):
+        t1_start = perf_counter()
         user = AnonymousUser()
 
         if 'user' in context:
@@ -41,6 +45,12 @@ class GetBoxNode(Node):
                 box[0].content,
                 template.render(context=context),
             )
+            t1_stop = perf_counter()
+            reportElapsed(t1_stop-t1_start,f"{user} box {box[0].pk}: {output[:32]}...",__file__)
+            # elapsed = t1_stop-t1_start
+            # color="32" if elapsed<.001 else "34" if elapsed<.002 else "33" if elapsed < .005 else "31" # https://stackoverflow.com/questions/58030468/how-to-have-colors-in-terminal-with-python-in-vscode
+            # #     green                     blue                       yellow                     red
+            # print(f"\033[{color}m{elapsed:.4f}\033[0m seconds  tendenci/apps/boxes/templatetags/box_tags.py") #wch
             return output
         except:
             return str()

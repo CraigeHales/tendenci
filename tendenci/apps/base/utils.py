@@ -1030,6 +1030,7 @@ def get_latest_version():
 
 
 def add_tendenci_footer(email_content, content_type='html'):
+    return email_content # wch
     if content_type == 'text':
         footer = _("This Association is Powered by Tendenci - The Open Source AMS https://www.tendenci.com")
         return email_content + '\n\n' + footer

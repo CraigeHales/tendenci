@@ -151,7 +151,11 @@ def details(request, id, size=None, crop=False, quality=90, download=False, cons
 
         if file.is_public_file():
             file_name = file.get_name()
-            file_path = 'cached%s%s' % (request.path, file_name)
+            #file_path = 'cached%s%s' % (request.path, file_name) # 'cached/files/37/80x80/crop/88/sponsorexample' -> cached/files37/
+
+            file_name, file_extension = os.path.splitext(file_name)
+            file_path = 'cached/%s%s/%s_%sx%s_%s.%s' % ('files', int(id)%100, id, size[0], size[1], file_name[0:31],image.format.lower()) 
+
             if not default_storage.exists(file_path):
                 default_storage.save(file_path, ContentFile(response.content))
             if settings.USE_S3_STORAGE:

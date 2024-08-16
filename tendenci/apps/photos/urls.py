@@ -32,16 +32,16 @@ urlpatterns = [
     re_path(r'^%s/edit/(?P<id>\d+)/in/(?P<set_id>\d+)/$' % urlpath, views.edit, name='photo_edit'),
     # /photos/sizes/23
 
-    ## sizes ##
-
-    re_path(r'^%s/sizes/(?P<id>\d+)/$' % urlpath, views.sizes, name='photo_sizes'),  # default sizes page
-    re_path(r'^%s/sizes/square/(?P<id>\d+)/$' % urlpath, views.sizes, kwargs={'size_name':'square'}, name='photo_square'),
-    re_path(r'^%s/sizes/thumbnail/(?P<id>\d+)/$' % urlpath, views.sizes, kwargs={'size_name':'thumbnail'}, name='photo_thumbnail'),
-    re_path(r'^%s/sizes/small/(?P<id>\d+)/$' % urlpath, views.sizes, kwargs={'size_name':'small'}, name='photo_small'),
-    re_path(r'^%s/sizes/medium-500/(?P<id>\d+)/$' % urlpath, views.sizes, kwargs={'size_name':'medium_500'}, name='photo_medium_500'),
-    re_path(r'^%s/sizes/medium-640/(?P<id>\d+)/$' % urlpath, views.sizes, kwargs={'size_name':'medium_640'}, name='photo_medium_640'),
-    re_path(r'^%s/sizes/large/(?P<id>\d+)/$' % urlpath, views.sizes, kwargs={'size_name':'large'}, name='photo_large'),
-    #re_path(r'^sizes/original/(?P<id>\d+)/$', views.sizes, kwargs={'size_name':'original'}, name='photo_original'),
+    # ## sizes ##
+# wch this is not useful, promotes 'borrowing'
+    # re_path(r'^%s/sizes/(?P<id>\d+)/$' % urlpath, views.sizes, name='photo_sizes'),  # default sizes page
+    # re_path(r'^%s/sizes/square/(?P<id>\d+)/$' % urlpath, views.sizes, kwargs={'size_name':'square'}, name='photo_square'),
+    # re_path(r'^%s/sizes/thumbnail/(?P<id>\d+)/$' % urlpath, views.sizes, kwargs={'size_name':'thumbnail'}, name='photo_thumbnail'),
+    # re_path(r'^%s/sizes/small/(?P<id>\d+)/$' % urlpath, views.sizes, kwargs={'size_name':'small'}, name='photo_small'),
+    # re_path(r'^%s/sizes/medium-500/(?P<id>\d+)/$' % urlpath, views.sizes, kwargs={'size_name':'medium_500'}, name='photo_medium_500'),
+    # re_path(r'^%s/sizes/medium-640/(?P<id>\d+)/$' % urlpath, views.sizes, kwargs={'size_name':'medium_640'}, name='photo_medium_640'),
+    # re_path(r'^%s/sizes/large/(?P<id>\d+)/$' % urlpath, views.sizes, kwargs={'size_name':'large'}, name='photo_large'),
+    # #re_path(r'^sizes/original/(?P<id>\d+)/$', views.sizes, kwargs={'size_name':'original'}, name='photo_original'),
 
     ## photo uploads ##
 
