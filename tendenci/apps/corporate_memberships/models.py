@@ -117,8 +117,9 @@ NOTICE_TYPES = (
 
 class CorporateMembershipType(OrderingBaseModel, TendenciBaseModel):
     REQUIRE_APPROVAL_CHOICES = (
-        ("for_all", _("for ALL (Paid & Non-Paid)")),
-        ("for_non_paid_only", _("for Non-Paid Only")),
+        ("for_all", _("Join, Renewal")),
+        ("for_non_paid_only", _("Join for Non-Paid, Renewal for Non-Paid")),
+        ("renew_non_paid_only", _("Join, Renewal for Non-Paid")),
     )
     guid = models.CharField(max_length=50)
     name = models.CharField(_('Name'), max_length=255, unique=True)
@@ -951,8 +952,9 @@ class CorpMembership(TendenciBaseModel):
         from tendenci.apps.perms.utils import get_notice_recipients
 
         # approve it
-        if request.user.profile.is_superuser or \
-                self.corporate_membership_type.require_approval == 'for_non_paid_only':
+        if request.user.is_superuser or \
+            self.corporate_membership_type.require_approval == 'for_non_paid_only' or \
+            (self.renewal and self.corporate_membership_type.require_approval == 'renew_non_paid_only'):
             if self.renewal:
                 self.approve_renewal(request)
             else:
@@ -1058,6 +1060,69 @@ class CorpMembership(TendenciBaseModel):
             return True
         return False
 
+    def auto_join_submitter(self, request):
+        """
+        Automatically join submitter under this corp if individual memberships are free.
+        Return an individual membership.
+        """
+        membership = None
+        creator = self.corp_profile.creator
+        if creator and not creator.is_superuser:
+            if not creator.membershipdefault_set.exclude(
+                        status_detail__in=['archive', 'disapproved']).exists():
+                group = self.corporate_membership_type.membership_type.group
+                membership = MembershipDefault()
+                membership.user = creator
+                membership.join_dt = datetime.now()
+                membership.expire_dt = self.expiration_dt
+                membership.corporate_membership_id = self.id
+                membership.corp_profile_id = self.corp_profile.id
+                membership.membership_type = \
+                    self.corporate_membership_type.membership_type
+                membership.status = True
+                membership.status_detail = 'active'
+                membership.admin_notes = 'Auto joined with corp membership'
+                membership.application_approved = True
+                membership.application_approved_dt = self.approved_denied_dt
+                if not request.user.is_anonymous:
+                    membership.owner_id = request.user.id
+                    membership.owner_username = request.user.username
+                    membership.application_approved_user = request.user
+
+                if membership.get_price() <= 0:
+                    membership.save()
+                    # archive old memberships
+                    membership.archive_old_memberships()
+    
+                    # show member_number on profile
+                    membership.profile_refresh_member_number()
+    
+                    # check and add member to the group if not exist
+                    [gm] = GroupMembership.objects.filter(group=group,
+                                                        member=membership.user
+                                                        )[:1] or [None]
+                    if gm:
+                        if gm.status_detail != 'active':
+                            gm.status_detail = 'active'
+                            gm.save()
+                    else:
+                        opt = {
+                            'group': group,
+                            'member': membership.user,
+                            'status': True,
+                            'status_detail': 'active',
+                            }
+                        if not request.user.is_anonymous:
+                            opt.update({
+                                    'creator_id': request.user.id,
+                                    'creator_username': request.user.username,
+                                    'owner_id': request.user.id,
+                                    'owner_username': request.user.username,
+                                       })
+                        GroupMembership.objects.create(**opt)
+
+        return membership
+
     def approve_join(self, request, **kwargs):
         self.approved = True
         self.approved_denied_dt = datetime.now()
@@ -1074,6 +1139,11 @@ class CorpMembership(TendenciBaseModel):
         if get_setting('module',  'corporate_memberships', 'adddirectory'):
             # add a directory entry for this corp
             self.corp_profile.add_directory()
+
+        if get_setting('module',  'corporate_memberships', 'autojoinsubmitter'):
+            membership_added = self.auto_join_submitter(request)
+        else:
+            membership_added = None
 
         # create salesforce lead if applicable
         sf = get_salesforce_access()
@@ -1118,7 +1188,8 @@ class CorpMembership(TendenciBaseModel):
                     'invoice': self.invoice,
                     'created': created,
                     'username': username,
-                    'password': password
+                    'password': password,
+                    'membership_added': membership_added
                 }
                 send_email_notification('corp_memb_join_approved',
                                     recipients, extra_context)
@@ -2207,6 +2278,10 @@ class Notice(models.Model):
         null=True,
         on_delete=models.SET_NULL,
         help_text=_("Note that if you don't select a corporate membership type, the notice will go out to all members."))
+    region = models.ForeignKey(Region, related_name="corp_notices", blank=True, null=True, on_delete=models.SET_NULL,
+                               help_text=_('If a region is selected, the notice will go out to members in this region. <br />Skip the next field "Regions to exclude" if this field is selected.'))
+    regions_to_exclude = models.ManyToManyField(Region, related_name="corp_notices_excluded", blank=True,
+                               help_text=_("Select regions you want to exclude so that members in those regions won't receive this notice."))
 
     subject = models.CharField(max_length=255)
     content_type = models.CharField(_("Content Type"),
@@ -2238,6 +2313,9 @@ class Notice(models.Model):
 
     def __str__(self):
         return self.notice_name
+
+    def excluded_regions(self):
+        return ', '.join([region.region_name for region in self.regions_to_exclude.all()])
 
     def get_default_context(self, corporate_membership=None,
                             recipient=None, **kwargs):
@@ -2416,9 +2494,19 @@ class Notice(models.Model):
             'status': True,
             'status_detail': 'active',
         }
+        
+        notices = Notice.objects.filter(**field_dict)
+        
+        region = corporate_membership.corp_profile.region
 
+        is_sent = False
         # send to applicant
-        for notice in Notice.objects.filter(**field_dict):
+        for notice in notices:
+
+            # skip if this notice doesn't include the region of this corp
+            regions_to_exclude = list(notice.regions_to_exclude.all())
+            if region and region in regions_to_exclude:
+                continue
 
             notice_requirments = (
                 notice.corporate_membership_type == corp_membership_type,
@@ -2445,7 +2533,8 @@ class Notice(models.Model):
                     notification.send_emails(
                         [recipient.user.email],
                         'corp_memb_notice_email', extra_context)
-        return True
+                    is_sent = True
+        return is_sent
 
     def save(self, *args, **kwargs):
         self.guid = self.guid or str(uuid.uuid4())
