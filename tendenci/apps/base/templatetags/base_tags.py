@@ -24,6 +24,8 @@ from tendenci.apps.files.utils import generate_image_cache_key
 from tendenci.apps.site_settings.utils import get_setting
 from tendenci.apps.theme.templatetags.static import static
 
+from addons.forestHome.templatetags.foresthome_filters import details as foresthome_details # wch
+
 register = Library()
 
 GOOGLE_SMAPS_BASE_URL = 'https://maps.googleapis.com/maps/api/staticmap'
@@ -699,7 +701,7 @@ class ImageURL(Node):
     def __init__(self, file, *args, **kwargs):
         self.size = kwargs.get("size", None)
         self.crop = kwargs.get("crop", False)
-        self.quality = kwargs.get("quality", None)
+        self.quality = kwargs.get("quality", "59") # wch default to lower quality
         self.constrain = kwargs.get("constrain", None)
         self.file = Variable(file)
 
@@ -729,9 +731,14 @@ class ImageURL(Node):
                 args.append("constrain")
             if self.quality:
                 args.append(self.quality)
-            url = reverse('file', args=args)
-            return url
-
+            # wch: was
+            # url = reverse('file', args=args)
+            # return url
+            # now: pre-compute the cache to avoid the redirect in files.views.details()
+            # there are a number of potential users of image_url tag, the important one *right now* is files.thumbnail.html
+            # elsewhere I avoided making changes in tendenci by making my own tags in foresthome_filters.py, including
+            # a variant of details() needed here ... foresthome_details()
+            return foresthome_details(context.request, "file", str(file.id), size=self.size, crop=self.crop, quality=self.quality, constrain=self.constrain)
         # return the default image url
         return static(settings.DEFAULT_IMAGE_URL)
 

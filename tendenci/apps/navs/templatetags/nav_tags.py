@@ -6,6 +6,7 @@ from tendenci.apps.perms.utils import get_query_filters
 from django.contrib.auth.models import AnonymousUser, User
 from tendenci.apps.navs.models import Nav
 from tendenci.apps.navs.utils import get_nav, cache_nav
+from addons.forestHome.cacher import green, yellow, red # wch 
 
 register = Library()
 
@@ -139,8 +140,10 @@ def nav(context, nav_id, show_title=False, is_site_map=False):
         nav_object = navs[0]
         nav = get_nav(nav_object.pk, is_site_map=is_site_map)
         if not nav:
-            print(f"user {user} caching nav{nav_object.pk} {nav_object} tendenci/apps/navs/templatetags/nav_tags.py#142")
+            print(f"user {user} {red('caching')} nav{nav_object.pk} {nav_object} tendenci/apps/navs/templatetags/nav_tags.py#142")
             nav = cache_nav(nav_object, show_title, is_site_map=is_site_map)
+        else:
+            print(f"user {user} {green('using')} nav{nav_object.pk} {nav_object} tendenci/apps/navs/templatetags/nav_tags.py#142")
     except:
         return None
 
@@ -179,7 +182,10 @@ def bootstrap_nav(context, nav_id, show_title=False):
         nav_object = navs[0]
         nav = get_nav(nav_object.pk)
         if not nav:
+            print(f"bootstrap {user} {red('caching')} nav{nav_object.pk} {nav_object} tendenci/apps/navs/templatetags/nav_tags.py#185")
             nav = cache_nav(nav_object, show_title)
+        else:
+            print(f"bootstrap {user} {green('using')} nav{nav_object.pk} {nav_object} tendenci/apps/navs/templatetags/nav_tags.py#188")
     except:
         return None
 
@@ -274,7 +280,7 @@ class GetNavNode(Node):
             if user.is_authenticated:
                 if not user.profile.is_superuser:
                     nav = nav.distinct()
-            print(f"user {user} rendering nav {nav[0]} tendenci/apps/navs/templatetags/nav_tags.py#277")
+            print(f"user {user} {red('rendering')} nav {nav[0]} tendenci/apps/navs/templatetags/nav_tags.py#277")
             context[self.context_var] = nav[0]
         except:
             pass

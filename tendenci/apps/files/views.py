@@ -52,7 +52,10 @@ from tendenci.apps.files.forms import FileForm, MostViewedForm, FileSearchForm, 
 @is_enabled('files')
 def details(request, id, size=None, crop=False, quality=90, download=False, constrain=False, template_name="files/details.html"):
     """
-    Return an image response after paramters have been applied.
+    Return an image response after paramters have been applied. wch: looking at http://localhost:8000/files/ files/search.html -> GET '/files/84/192x192/crop/84/'
+    "details" is a callback to generate an image; the browser is rendering the page and asking for img tags.
+    about 20 lines down, the /files/84/192x192/crop/84/ gets redirected to whatever filename was cached. the redirect is slow but only happens
+    to the user that hit the empty cache.
     """
     file = get_object_or_404(File, pk=id)
 
@@ -74,7 +77,8 @@ def details(request, id, size=None, crop=False, quality=90, download=False, cons
             if default_storage.exists(cached_image):
                 return redirect(default_storage.url(cached_image))
             return redirect(cached_image)
-        return redirect('%s%s' % (get_setting('site', 'global', 'siteurl'), cached_image))
+        # wch: return redirect('%s%s' % (get_setting('site', 'global', 'siteurl'), cached_image))
+        return redirect(cached_image)
 
     # basic permissions
     if not has_view_perm(request.user, 'files.view_file', file):
@@ -154,7 +158,7 @@ def details(request, id, size=None, crop=False, quality=90, download=False, cons
             #file_path = 'cached%s%s' % (request.path, file_name) # 'cached/files/37/80x80/crop/88/sponsorexample' -> cached/files37/
 
             file_name, file_extension = os.path.splitext(file_name)
-            file_path = 'cached/%s%s/%s_%sx%s_%s.%s' % ('files', int(id)%100, id, size[0], size[1], file_name[0:31],image.format.lower()) 
+            file_path = 'cached/%s_tartan_%s/%s_%sx%s_%s.%s' % ('files', int(id)%100, id, size[0], size[1], file_name[0:31],image.format.lower()) 
 
             if not default_storage.exists(file_path):
                 default_storage.save(file_path, ContentFile(response.content))

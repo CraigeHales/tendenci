@@ -44,11 +44,9 @@ class ThemeStaticNode(StaticNode):
             t1_start = perf_counter()
             cls.cache[path] = cls.handle_simple2( path, local_only, template, theme)
             t1_stop = perf_counter()
-            reportElapsed(t1_stop-t1_start,f"{red('cache')} {path}:{cls.cache[path]}",__file__)
+            reportElapsed(t1_stop-t1_start,f"{red('ThemeStaticNode cache')} {path}:{cls.cache[path]}",__file__)
         else:
-            reportElapsed(0,f"{green('reuse')} {path}:{cls.cache[path]}",__file__)
-        if path=='tiny_mce/tinymce.min.js':
-            print('slow /home/c/srvgh/tendenci-git/tendenci/apps/theme/templatetags/static.py')
+            reportElapsed(0,f"{green('ThemeStaticNode reuse')} {path[-20:]} -> {cls.cache[path][-20:]}",__file__)
         return cls.cache[path]
 
     @classmethod

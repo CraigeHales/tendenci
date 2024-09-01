@@ -224,6 +224,19 @@ def photo_size(request, id, size, crop=False, quality=90, download=False, constr
     Does not use template
     Saves resized image within cache system
     Returns 404 if if image rendering fails
+    wch: this is the 2nd step of photo_image_url in photos/details.html (defined in base_tags.py PhotoImageURL)
+         I'm not sure why the cache creation is delayed to here; the 'requesting url' was generated without
+         pre-building this cached image, as part of a page that is going to be shown to drive this code.
+         requesting url = /photos/8/1280x1080/constrain/90/
+         resolves to = /media/cached/photos8/8_512x512_two-people-meet-in-a-park-s3742979915-st10-g7-5-0029f.jpeg
+         (cached at the end of this function for next time)
+         note the cache directory is flattened by 3 or 4 levels vs tendenci original plan and
+         grouped by mod 100 of the primary key for the image; my goal is to conserve inodes, their goal
+         was to completely index each image with a directory nest of 1-item directories...I guess.
+         The downside to the 2-step process is after the image is cached there is *always* a redirect
+         (about 10 lines of code down.) The upside of the 2-step process is sometimes an image might
+         never be generated for a link that is never taken. 
+         FIXME: move this logic into base.tags, similar to another version for files(?)
     """
 
     if isinstance(quality, str) and quality.isdigit():
@@ -234,7 +247,7 @@ def photo_size(request, id, size, crop=False, quality=90, download=False, constr
     if cached_image:
         if settings.USE_S3_STORAGE:
             return redirect(default_storage.url(cached_image))
-        #return redirect('{0}{1}'.format(get_setting('site', 'global', 'siteurl'), cached_image))
+        # wch: return redirect('{0}{1}'.format(get_setting('site', 'global', 'siteurl'), cached_image))
         return redirect( cached_image)
 
     photo = get_object_or_404(Image, id=id)
@@ -260,8 +273,8 @@ def photo_size(request, id, size, crop=False, quality=90, download=False, constr
     # Check if this particular thumbnail already exists on file system.
     # If it's there, no need to rebuild it from the original image!
     file_name = photo.image_filename()
-    #file_path = 'cached%s%s' % (request.path, file_name)
-    file_path = 'cached/%s%s/%s_%sx%s_%s' % ("photos", int(id)%100, id, size[0], size[1], file_name) 
+    # wch: file_path = 'cached%s%s' % (request.path, file_name)
+    file_path = 'cached/%s_gingham_%s/%s_%sx%s_%s' % ("photos", int(id)%100, id, size[0], size[1], file_name) 
     if default_storage.exists(file_path):
         image = PILImage.open(default_storage.open(file_path))
     else:
@@ -279,7 +292,7 @@ def photo_size(request, id, size, crop=False, quality=90, download=False, constr
 
     if photo.is_public_photo() and photo.is_public_photoset():
         if not default_storage.exists(file_path):
-            default_storage.save(file_path, ContentFile(response.content)) # 'cached/photos/366/640x640/constrain/90/chipmunk-and-tardigrade-fighting-on-a-mountaintop-with-a-lightning-bol-5b692.jpeg'
+            default_storage.save(file_path, ContentFile(response.content)) # wch: 'cached/photos/366/640x640/constrain/90/chipmunk-and-tardigrade-fighting-on-a-mountaintop-with-a-lightning-bol-5b692.jpeg'
         if settings.USE_S3_STORAGE:
             cache.set(cache_key, file_path)
         else:

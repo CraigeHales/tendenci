@@ -133,6 +133,7 @@ class RegistrySite(object):
     """
     def __init__(self):
         self._registry = {}
+        self.wchCache = None
 
     def register(self, model, registry_class=None):
         """
@@ -154,9 +155,10 @@ class RegistrySite(object):
             raise AlreadyRegistered(_('The model %(cls)s is already registered' % {'cls' :model.__class__}))
 
         self._registry[model] = registry_class(model)
-
+        print(f"register {model} {__file__}")
         #reset cache of the registered apps
         delete_reg_apps_cache()
+        self.wchCache = None
         cache_reg_apps(self.get_registered_apps())
 
     def unregister(self, model):
@@ -169,9 +171,13 @@ class RegistrySite(object):
 
         #reset cache of the registered apps
         delete_reg_apps_cache()
+        self.wchCache = None
         cache_reg_apps(self.get_registered_apps())
 
     def get_registered_apps(self):
+        if self.wchCache is not None:
+            print(f"get_registered_apps 0.0 {__file__}")
+            return self.wchCache
         t1_start = perf_counter()
         cached_apps = get_reg_apps()
         t1_stop = perf_counter()
@@ -183,8 +189,8 @@ class RegistrySite(object):
         else:
             apps = RegisteredApps(self._registry)
         t1_stop = perf_counter()
-        reportElapsed(t1_stop-t1_start,f"get_registered_apps 2 {cached_apps is None}",__file__)  
-
+        reportElapsed(t1_stop-t1_start,f"get_registered_apps 2 nocache={cached_apps is None} napps={len(apps)}",__file__)  
+        self.wchCache = apps
         return apps
 
 site = RegistrySite()

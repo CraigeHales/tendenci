@@ -150,12 +150,12 @@ class ImageModel(models.Model):
                     (self.image.url, func())
     admin_thumbnail.short_description = _('Thumbnail')
 
-    def cache_path(self): # self.pk=255 self.image.height=512 self.image.width=512 (this is 'photo' app)
+    def cache_path(self): # wch: self.pk=255 self.image.height=512 self.image.width=512 (this is 'photo' app)
 #        # example 'photos/cache/3949a2d9' or 'photos/cache'
 #        l = str(self.image).split('/') # self.image.name='photos/91b02bd9/kitten-puppy-playing-serene-beautiful-lighting-pastel-warm-color-p-53354.jpeg'
 #        l.insert(1, 'cache') # ['photos', '91b02bd9', 'kitten-puppy-playing-serene-beautiful-lighting-pastel-warm-color-p-53354.jpeg'] -> ['photos', 'cache', '91b02bd9', 'kitten-puppy-playing-serene-beautiful-lighting-pastel-warm-color-p-53354.jpeg']
 #        return os.path.dirname('/'.join(l)) # 'photos/cache/91b02bd9'
-        return 'cached/%s%s' % ('photos', int(self.pk)%100,) # /%s_%sx%s_%s.%s id, size[0], size[1], file_name[0:31],image.format.lower()) 
+        return 'cached/%s_flannel_%s' % ('photos', int(self.pk)%100,) # /%s_%sx%s_%s.%s id, size[0], size[1], file_name[0:31],image.format.lower()) 
     def cache_url(self):
         return os.path.join(settings.MEDIA_URL, self.cache_path())
 
