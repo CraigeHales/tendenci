@@ -32,7 +32,7 @@ def get_static_prefix(parser, token):
 _cached_theme_search_info = (None, None)
 class ThemeStaticNode(StaticNode):
 
-    cache = {}
+    wch_cache = {}
 
     def url(self, context):
         path = self.path.resolve(context)
@@ -40,14 +40,15 @@ class ThemeStaticNode(StaticNode):
 
     @classmethod
     def handle_simple(cls, path, local_only, template=None, theme=None):
-        if path not in cls.cache:
-            t1_start = perf_counter()
-            cls.cache[path] = cls.handle_simple2( path, local_only, template, theme)
+        t1_start = perf_counter()
+        if path not in cls.wch_cache:
+            cls.wch_cache[path] = cls.handle_simple2( path, local_only, template, theme)
             t1_stop = perf_counter()
-            reportElapsed(t1_stop-t1_start,f"{red('ThemeStaticNode cache')} {path}:{cls.cache[path]}",__file__)
+            reportElapsed(t1_stop-t1_start,f"{red('ThemeStaticNode cache')} {path}:{cls.wch_cache[path]}",__file__)
         else:
-            reportElapsed(0,f"{green('ThemeStaticNode reuse')} {path[-20:]} -> {cls.cache[path][-20:]}",__file__)
-        return cls.cache[path]
+            t1_stop = perf_counter()
+            reportElapsed(t1_stop-t1_start,f"{green('ThemeStaticNode reuse')} {path[-20:]} -> {cls.wch_cache[path][-20:]}",__file__)
+        return cls.wch_cache[path]
 
     @classmethod
     def handle_simple2(cls, path, local_only, template, theme):

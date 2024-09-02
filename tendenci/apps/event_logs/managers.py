@@ -261,6 +261,7 @@ class EventLogManager(Manager):
         if "." in event_log.user_ip_address or ":" in event_log.user_ip_address:
             event_log.save()
             t1_stop = perf_counter()
+            print(f"\n\n")
             reportElapsed(t1_stop-t1_start,f"{repr(event_log)}",__file__)
             # elapsed = t1_stop-t1_start
             # color="32" if elapsed<.001 else "34" if elapsed<.002 else "33" if elapsed < .005 else "31" # https://stackoverflow.com/questions/58030468/how-to-have-colors-in-terminal-with-python-in-vscode

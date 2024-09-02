@@ -33,7 +33,8 @@ def themed_response(request, template_name, context={}, content_type=None, statu
     from tendenci.apps.theme.shortcuts import themed_response as render_to_resp
     """
 
-    print("tendenci/apps/theme/shortcuts.py is rendering ",template_name) # wch
+    t1_start = perf_counter()
+    print(f"\n{'='*32}\n{__file__[-32:]} is rendering ",template_name) # wch
 
     if isinstance(template_name, (list, tuple)):
         template = select_template(template_name, using=using)
@@ -42,10 +43,9 @@ def themed_response(request, template_name, context={}, content_type=None, statu
 
     context['TEMPLATE_NAME'] = template.origin.template_name
     context['TEMPLATE_THEME'] = getattr(template.origin, 'theme', None)
-    t1_start = perf_counter()
     rendered = template.render(context=context, request=request)
     t1_stop = perf_counter()
-    reportElapsed(t1_stop-t1_start,f"template render {template_name}",__file__)
+    reportElapsed(t1_stop-t1_start,f"template render {template_name}\n{'='*32}\n\n",__file__)
     # elapsed = t1_stop-t1_start
     # color="32" if elapsed<.001 else "34" if elapsed<.002 else "33" if elapsed < .005 else "31" # https://stackoverflow.com/questions/58030468/how-to-have-colors-in-terminal-with-python-in-vscode
     # #     green                     blue                       yellow                     red
