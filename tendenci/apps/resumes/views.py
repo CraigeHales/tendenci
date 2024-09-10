@@ -189,7 +189,7 @@ def add(request, form_class=ResumeForm, template_name="resumes/add.html"):
 
             resume = update_perms_and_save(request, form, resume)
             # we need to save instance first since we need the id for the file path
-            if request.FILES:
+            if request.FILES: # wch resume.pk>=1, request.FILES is InMemoryUploadedFile
                 resume.resume_file = request.FILES['resume_file']
                 resume.resume_file.file.seek(0)
                 resume.save()

@@ -145,7 +145,8 @@ class TendenciBaseModel(models.Model):
                 # Save a version of this content.
                 try:
                     Version.objects.save_version(self.__class__.objects.get(pk=self.pk), self)
-                except Exception:
+                except Exception as e:
+                    print(f"{e} {__file__}") # wch, why would you catch and ignore everything?
                     pass
                     #print("version error: ", e)
 
