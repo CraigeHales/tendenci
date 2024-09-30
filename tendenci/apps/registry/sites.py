@@ -7,6 +7,7 @@ from django.utils.functional import lazy
 from tendenci.apps.registry.exceptions import AlreadyRegistered, NotRegistered
 from tendenci.apps.registry.cache import cache_reg_apps, get_reg_apps, delete_reg_apps_cache
 from tendenci.apps.site_settings.utils import check_setting, get_setting
+from django.conf import settings # wch see RUNNING_DEVSERVER test to block message in production
 
 from time import perf_counter
 from addons.forestHome.cacher import cache_by_,reportElapsed,green,red,blue,yellow
@@ -155,7 +156,8 @@ class RegistrySite(object):
             raise AlreadyRegistered(_('The model %(cls)s is already registered' % {'cls' :model.__class__}))
 
         self._registry[model] = registry_class(model)
-        print(f"register {model} {__file__}")
+        if settings.RUNNING_DEVSERVER: # wch see RUNNING_DEVSERVER test to block message in production
+            print(f"register {model} {__file__}")
         #reset cache of the registered apps
         delete_reg_apps_cache()
         self.wchCache = None
@@ -176,7 +178,8 @@ class RegistrySite(object):
 
     def get_registered_apps(self):
         if self.wchCache is not None:
-            print(f"get_registered_apps 0.0 {__file__}")
+            if settings.RUNNING_DEVSERVER: # wch see RUNNING_DEVSERVER test to block message in production
+                print(f"get_registered_apps 0.0 {__file__}")
             return self.wchCache
         t1_start = perf_counter()
         cached_apps = get_reg_apps()

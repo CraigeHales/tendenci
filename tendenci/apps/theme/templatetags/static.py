@@ -28,6 +28,9 @@ def get_static_prefix(parser, token):
     warn('{%% get_static_prefix %%} in template "%s" in %s should be avoided because it does not work with Tendenci themes'%(template, theme_str), DeprecationWarning)
     _get_static_prefix(parser, token)
 
+# handle_simple2 in tendenci/apps/theme/templatetags/static.py is a 0.1 second benefit
+# to not check the disk presence of so many files on every page.
+# the cache key...does it need to include other parameters in addition to path? wch - pretty sure nothing else is needed.
 
 _cached_theme_search_info = (None, None)
 class ThemeStaticNode(StaticNode):

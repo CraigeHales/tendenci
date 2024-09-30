@@ -1473,7 +1473,7 @@ def membership_default_add(request, slug='', membership_id=None,
 
             # form is valid
             if all(forms_validate):
-                customer = user_form.save()
+                customer = user_form.save() # wch the user is created from get-a-login-password; the email becomes the username
 
                 if user:
                     customer.pk = user.pk

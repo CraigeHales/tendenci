@@ -898,7 +898,7 @@ class UserForm(FormControlWidgetMixin, forms.ModelForm):
                             u = User.objects.filter(email__iexact=email).order_by('-is_active')[0]
                             [profile] = Profile.objects.filter(user=u)[:1] or [None]
                             if (profile and profile.is_active) and u.is_active:
-                                raise forms.ValidationError(email_validate_err_msg)
+                                raise forms.ValidationError(email_validate_err_msg) # wch email exists, about to be used for username
 
                             # at this point, user is not logged in and user record with this email is inactive
                             # let them activate the account before applying for membership
@@ -957,7 +957,7 @@ class UserForm(FormControlWidgetMixin, forms.ModelForm):
             user.last_name = user_attrs['last_name']
 
         if created:
-            user.is_active = False
+            user.is_active = False # wch new memberships are created inactive
         user.save()
 
         return user

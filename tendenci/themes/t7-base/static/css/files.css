@@ -109,6 +109,7 @@
 .t .file-wrap .meta {
 	margin-top: 10px;
     	background: #F6F6F6;
+		color: black; /* wch make sure the text color shows against the background */
     	padding: 5px 8px;
 }
 

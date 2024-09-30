@@ -338,11 +338,13 @@ class MembershipType(OrderingBaseModel, TendenciBaseModel):
                     tcurrency(self.admin_fee)
                 )
             else:
-                price_display = (self.PRICE_FORMAT) % (
-                    self.name,
-                    tcurrency(price)
-                )
-
+                if price != 0:
+                    price_display = (self.PRICE_FORMAT) % (
+                        self.name,
+                        tcurrency(price)
+                    )
+                else:
+                    price_display = self.name # wch don't show "- $0.00" after free Neighborhood or World membership
         if above_cap_format:
             price_display = price_display + above_cap_format
 
