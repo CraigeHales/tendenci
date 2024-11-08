@@ -588,7 +588,7 @@ def form_detail(request, slug=None, id=None, template="forms/form_detail.html"):
                     # Send message to the person who submitted the form.
                     email.recipient = email_to
                     email.body = submitter_body
-                    email.send(fail_silently=getattr(settings, 'EMAIL_FAIL_SILENTLY', True))
+                    email.send(fail_silently=getattr(settings, 'EMAIL_FAIL_SILENTLY', False)) # wch was True
                     # log an event
                     EventLog.objects.log(instance=form, description='Confirmation email sent to {}'.format(email_to))
 
@@ -629,7 +629,7 @@ def form_detail(request, slug=None, id=None, template="forms/form_detail.html"):
                     #                 f.seek(0)
                     #                 attachments.append((f.name.split('/')[-1], f.read()))
 
-                    fail_silently = getattr(settings, 'EMAIL_FAIL_SILENTLY', True)
+                    fail_silently = getattr(settings, 'EMAIL_FAIL_SILENTLY', False) # wch was True
                     # Send message to the email addresses listed in the copies
                     if email_copies:
                         email.body = admin_body

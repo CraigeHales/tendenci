@@ -761,12 +761,13 @@ class Profile(Person):
                 default = '%s%s'%(site_url,
                                 static(settings.GAVATAR_DEFAULT_URL))
 
-        if get_setting('module', 'users', 'disablegravatar'):
+        if get_setting('module', 'users', 'disablegravatar'): # http://localhost:8001/settings/module/users/#id_disablegravatar is true
             return static(settings.GAVATAR_DEFAULT_URL)
         print(" \033[31m >>>>>>>>>> GRAVATAR <<<<<<<<< \033[0m tendenci/apps/profiles/models.py#766")
-        gravatar_url = "//www.gravatar.com/avatar/" + self.getMD5() + "?"
-        gravatar_url += urlencode({'d':default, 's':str(size)})
-        return gravatar_url
+        return static(settings.GAVATAR_DEFAULT_URL) # wch really don't want to leak info via gravatar
+        # gravatar_url = "//www.gravatar.com/avatar/" + self.getMD5() + "?"
+        # gravatar_url += urlencode({'d':default, 's':str(size)})
+        # return gravatar_url
 
     def get_photo_url(self, size=128):
         """
